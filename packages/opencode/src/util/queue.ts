@@ -1,5 +1,6 @@
 export class AsyncQueue<T> implements AsyncIterable<T> {
   private queue: T[] = []
+  private offset = 0
   private resolvers: ((value: T) => void)[] = []
 
   push(item: T) {
@@ -9,7 +10,15 @@ export class AsyncQueue<T> implements AsyncIterable<T> {
   }
 
   async next(): Promise<T> {
-    if (this.queue.length > 0) return this.queue.shift()!
+    if (this.offset < this.queue.length) {
+      const item = this.queue[this.offset]!
+      this.offset += 1
+      if (this.offset === this.queue.length) {
+        this.queue = []
+        this.offset = 0
+      }
+      return item
+    }
     return new Promise((resolve) => this.resolvers.push(resolve))
   }
 
@@ -20,10 +29,12 @@ export class AsyncQueue<T> implements AsyncIterable<T> {
 
 export async function work<T>(concurrency: number, items: T[], fn: (item: T) => Promise<void>) {
   const pending = [...items]
+  let index = 0
   await Promise.all(
     Array.from({ length: concurrency }, async () => {
       while (true) {
-        const item = pending.pop()
+        const item = pending[index]
+        index += 1
         if (item === undefined) return
         await fn(item)
       }

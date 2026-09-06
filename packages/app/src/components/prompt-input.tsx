@@ -188,6 +188,15 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   })
 
   const MAX_HISTORY = 100
+  const [busyBehavior, setBusyBehavior] = persisted(
+    Persist.global("prompt-busy-behavior", ["prompt-busy-behavior.v1"]),
+    createStore<{
+      onBusy: "queue" | "interrupt"
+    }>({
+      onBusy: "queue",
+    }),
+  )
+
   const [history, setHistory] = persisted(
     Persist.global("prompt-history", ["prompt-history.v1"]),
     createStore<{
@@ -1276,6 +1285,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
         agent,
         model,
         messageID,
+        onBusy: busyBehavior.onBusy,
         parts: requestParts,
         variant,
       })
@@ -1581,6 +1591,19 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                     </Button>
                   </TooltipKeybind>
                 </Show>
+                <Tooltip placement="top" value="When busy, send as queue or interrupt">
+                  <Select
+                    options={["queue", "interrupt"]}
+                    current={busyBehavior.onBusy}
+                    onSelect={(value) => {
+                      if (!value) return
+                      if (value !== "queue" && value !== "interrupt") return
+                      setBusyBehavior("onBusy", value)
+                    }}
+                    label={(value) => (value === "queue" ? "Queue" : "Interrupt")}
+                    variant="ghost"
+                  />
+                </Tooltip>
                 <Show when={permission.permissionsEnabled() && params.id}>
                   <TooltipKeybind
                     placement="top"
@@ -1634,7 +1657,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
               inactive={!prompt.dirty() && !working()}
               value={
                 <Switch>
-                  <Match when={working()}>
+                  <Match when={working() && !prompt.dirty()}>
                     <div class="flex items-center gap-2">
                       <span>Stop</span>
                       <span class="text-icon-base text-12-medium text-[10px]!">ESC</span>
@@ -1652,7 +1675,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
               <IconButton
                 type="submit"
                 disabled={!prompt.dirty() && !working()}
-                icon={working() ? "stop" : "arrow-up"}
+                icon={working() && !prompt.dirty() ? "stop" : "arrow-up"}
                 variant="primary"
                 class="h-6 w-4.5"
               />

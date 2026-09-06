@@ -92,6 +92,7 @@ export namespace SessionPrompt {
       .optional(),
     agent: z.string().optional(),
     noReply: z.boolean().optional(),
+    onBusy: z.enum(["queue", "interrupt"]).optional().describe("How to handle a new message while the session is busy"),
     tools: z
       .record(z.string(), z.boolean())
       .optional()
@@ -150,6 +151,10 @@ export namespace SessionPrompt {
   export const prompt = fn(PromptInput, async (input) => {
     const session = await Session.get(input.sessionID)
     await SessionRevert.cleanup(session)
+
+    if (input.onBusy === "interrupt" && state()[input.sessionID]) {
+      cancel(input.sessionID)
+    }
 
     const message = await createUserMessage(input)
     await Session.touch(input.sessionID)

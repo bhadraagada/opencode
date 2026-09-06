@@ -2,9 +2,8 @@ import { TextAttributes } from "@opentui/core"
 import { useTheme } from "../context/theme"
 import { useDialog, type DialogContext } from "./dialog"
 import { createStore } from "solid-js/store"
-import { For } from "solid-js"
 import { useKeyboard } from "@opentui/solid"
-import { Locale } from "@/util/locale"
+import { Button, Kbd } from "./components"
 
 export type DialogConfirmProps = {
   title: string
@@ -37,30 +36,34 @@ export function DialogConfirm(props: DialogConfirmProps) {
         <text attributes={TextAttributes.BOLD} fg={theme.text}>
           {props.title}
         </text>
-        <text fg={theme.textMuted}>esc</text>
+        <Kbd>esc</Kbd>
       </box>
       <box paddingBottom={1}>
         <text fg={theme.textMuted}>{props.message}</text>
       </box>
-      <box flexDirection="row" justifyContent="flex-end" paddingBottom={1}>
-        <For each={["cancel", "confirm"]}>
-          {(key) => (
-            <box
-              paddingLeft={1}
-              paddingRight={1}
-              backgroundColor={key === store.active ? theme.primary : undefined}
-              onMouseUp={(evt) => {
-                if (key === "confirm") props.onConfirm?.()
-                if (key === "cancel") props.onCancel?.()
-                dialog.clear()
-              }}
-            >
-              <text fg={key === store.active ? theme.selectedListItemText : theme.textMuted}>
-                {Locale.titlecase(key)}
-              </text>
-            </box>
-          )}
-        </For>
+      <box flexDirection="row" justifyContent="flex-end" paddingBottom={1} gap={1}>
+        <Button
+          variant="ghost"
+          focused={store.active === "cancel"}
+          onPress={() => {
+            props.onCancel?.()
+            dialog.clear()
+          }}
+          onFocus={() => setStore("active", "cancel")}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="primary"
+          focused={store.active === "confirm"}
+          onPress={() => {
+            props.onConfirm?.()
+            dialog.clear()
+          }}
+          onFocus={() => setStore("active", "confirm")}
+        >
+          Confirm
+        </Button>
       </box>
     </box>
   )

@@ -20,6 +20,12 @@ export namespace Share {
     const { secret } = share
     pending.set(key, content)
     queue = queue
+      .catch((error) => {
+        log.error("previous sync failed", {
+          key: key,
+          error,
+        })
+      })
       .then(async () => {
         const content = pending.get(key)
         if (content === undefined) return
@@ -42,6 +48,12 @@ export namespace Share {
             status: x.status,
           })
         }
+      })
+      .catch((error) => {
+        log.error("sync failed", {
+          key: key,
+          error,
+        })
       })
   }
 

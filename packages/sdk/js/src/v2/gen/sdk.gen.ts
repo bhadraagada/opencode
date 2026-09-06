@@ -1314,6 +1314,7 @@ export class Session extends HeyApiClient {
       }
       agent?: string
       noReply?: boolean
+      onBusy?: "queue" | "interrupt"
       tools?: {
         [key: string]: boolean
       }
@@ -1334,6 +1335,7 @@ export class Session extends HeyApiClient {
             { in: "body", key: "model" },
             { in: "body", key: "agent" },
             { in: "body", key: "noReply" },
+            { in: "body", key: "onBusy" },
             { in: "body", key: "tools" },
             { in: "body", key: "system" },
             { in: "body", key: "variant" },
@@ -1402,6 +1404,7 @@ export class Session extends HeyApiClient {
       }
       agent?: string
       noReply?: boolean
+      onBusy?: "queue" | "interrupt"
       tools?: {
         [key: string]: boolean
       }
@@ -1422,6 +1425,7 @@ export class Session extends HeyApiClient {
             { in: "body", key: "model" },
             { in: "body", key: "agent" },
             { in: "body", key: "noReply" },
+            { in: "body", key: "onBusy" },
             { in: "body", key: "tools" },
             { in: "body", key: "system" },
             { in: "body", key: "variant" },

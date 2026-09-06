@@ -2,6 +2,7 @@ import { TextAttributes } from "@opentui/core"
 import { useTheme } from "../context/theme"
 import { useDialog, type DialogContext } from "./dialog"
 import { useKeyboard } from "@opentui/solid"
+import { Button, Kbd } from "./components"
 
 export type DialogAlertProps = {
   title: string
@@ -25,23 +26,22 @@ export function DialogAlert(props: DialogAlertProps) {
         <text attributes={TextAttributes.BOLD} fg={theme.text}>
           {props.title}
         </text>
-        <text fg={theme.textMuted}>esc</text>
+        <Kbd>esc</Kbd>
       </box>
       <box paddingBottom={1}>
         <text fg={theme.textMuted}>{props.message}</text>
       </box>
       <box flexDirection="row" justifyContent="flex-end" paddingBottom={1}>
-        <box
-          paddingLeft={3}
-          paddingRight={3}
-          backgroundColor={theme.primary}
-          onMouseUp={() => {
+        <Button
+          variant="primary"
+          focused
+          onPress={() => {
             props.onConfirm?.()
             dialog.clear()
           }}
         >
-          <text fg={theme.selectedListItemText}>ok</text>
-        </box>
+          OK
+        </Button>
       </box>
     </box>
   )

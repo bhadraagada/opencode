@@ -1,6 +1,5 @@
 import { Bus } from "@/bus"
 import { Config } from "@/config/config"
-import { ulid } from "ulid"
 import { Provider } from "@/provider/provider"
 import { Session } from "@/session"
 import { MessageV2 } from "@/session/message-v2"
@@ -108,19 +107,27 @@ export namespace ShareNext {
         data: SDK.Model[]
       }
 
+  function key(input: Data) {
+    if (input.type === "session") return `session:${input.data.id}`
+    if (input.type === "message") return `message:${input.data.id}`
+    if (input.type === "part") return `part:${input.data.id}`
+    if (input.type === "session_diff") return "session_diff"
+    return "model"
+  }
+
   const queue = new Map<string, { timeout: NodeJS.Timeout; data: Map<string, Data> }>()
   async function sync(sessionID: string, data: Data[]) {
     const existing = queue.get(sessionID)
     if (existing) {
       for (const item of data) {
-        existing.data.set("id" in item ? (item.id as string) : ulid(), item)
+        existing.data.set(key(item), item)
       }
       return
     }
 
     const dataMap = new Map<string, Data>()
     for (const item of data) {
-      dataMap.set("id" in item ? (item.id as string) : ulid(), item)
+      dataMap.set(key(item), item)
     }
 
     const timeout = setTimeout(async () => {

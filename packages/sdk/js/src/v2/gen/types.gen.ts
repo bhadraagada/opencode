@@ -3123,6 +3123,7 @@ export type SessionPromptData = {
     }
     agent?: string
     noReply?: boolean
+    onBusy?: "queue" | "interrupt"
     /**
      * @deprecated tools and permissions have been merged, you can set permissions on the session itself now
      */
@@ -3310,6 +3311,7 @@ export type SessionPromptAsyncData = {
     }
     agent?: string
     noReply?: boolean
+    onBusy?: "queue" | "interrupt"
     /**
      * @deprecated tools and permissions have been merged, you can set permissions on the session itself now
      */
@@ -4672,6 +4674,7 @@ export type TuiControlNextResponses = {
    * Next TUI request
    */
   200: {
+    requestID: string
     path: string
     body: unknown
   }

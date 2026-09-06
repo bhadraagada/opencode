@@ -32,7 +32,13 @@ export namespace Clipboard {
     if (os === "win32" || release().includes("WSL")) {
       const script =
         "Add-Type -AssemblyName System.Windows.Forms; $img = [System.Windows.Forms.Clipboard]::GetImage(); if ($img) { $ms = New-Object System.IO.MemoryStream; $img.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png); [System.Convert]::ToBase64String($ms.ToArray()) }"
-      const base64 = await $`powershell.exe -NonInteractive -NoProfile -command "${script}"`.nothrow().text()
+      // -sta flag is required for clipboard access in WinForms
+      const proc = Bun.spawn(["powershell.exe", "-sta", "-NonInteractive", "-NoProfile", "-Command", script], {
+        stdout: "pipe",
+        stderr: "ignore",
+      })
+      const base64 = await new Response(proc.stdout).text()
+      await proc.exited.catch(() => {})
       if (base64) {
         const imageBuffer = Buffer.from(base64.trim(), "base64")
         if (imageBuffer.length > 0) {
